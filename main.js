@@ -264,7 +264,7 @@ window.onload = function() {
   var form = document.createElement("form");
   form.name = "authform";
   form.id = "authform";
-  form.innerHTML += "<a href=\"oauth.html\" target=\"_blank\">認証ページを開く</a>";
+  form.innerHTML += "<a href=\"auth.html\" target=\"_blank\">認証ページを開く</a>";
   form.innerHTML += "<br />";
   form.appendChild(document.createTextNode("認証用文字列を入力してください"));
   form.appendChild(document.createElement("br"));
