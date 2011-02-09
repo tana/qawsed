@@ -1,0 +1,37 @@
+<html>
+  <head>
+    <title>Twitter client</title>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="main.css" type="text/css" />
+    <script src="crossdomain.js" type="text/javascript"></script>
+    <script src="oauth.js" type="text/javascript"></script>
+    <script src="sha1.js" type="text/javascript"></script>
+    <script src="main.js" type="text/javascript"></script>
+    <script src="tab.js" type="text/javascript"></script>
+    <script src="height.js" type="text/javascript"></script>
+    <script type="text/javscript" src="main.js"></script>
+  </head>
+  <body>
+    <div id="main">
+      <div id="postbox">
+        <!-- 投稿するつぶやきを書くところ -->
+        <textarea id="posttext" rows="2" cols="30"></textarea>
+        <input type="button" id="post" value="投稿" />
+      </div>
+      <br />
+      <div id="tabs">
+        <!-- タブ -->
+        <div id="tab_home" class="active_tab">Home</div>
+        <div id="tab_mentions" class="tab">Mentions</div>
+      </div>
+      <!-- 情報表示 -->
+      <span id="status"></span>
+      <br />
+      <div id="tweets">
+        <!-- つぶやきを表示するところ -->
+      </div>
+      <div id="mentions" style="display: none">
+      </div>
+    </div>
+  </body>
+</html>

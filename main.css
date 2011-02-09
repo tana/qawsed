@@ -1,0 +1,50 @@
+div#tweets div#mentions {
+  clear: both;
+}
+#tweets {
+  overflow: auto;
+  position: absolute;
+  margin-right: 4px;
+  height: 100%;
+}
+#mentions {
+  overflow: auto;
+  position: absolute;
+  margin-right: 4px;
+  height: 100%;
+}
+div#tabs {
+  clear: both;
+  background-color: lavender;
+}
+.active_tab {
+  background-color: pink;
+  float: left;
+}
+.tab {
+  background-color: lightgrey;
+  float: left;
+  cursor: pointer;
+}
+div.tweet {
+  clear: both;
+  background-color: lavender;
+  padding: 2px 2px 2px 2px;
+  min-height: 48px;
+  word-wrap: break-word;
+}
+textarea#posttext {
+  float: left;
+}
+input#post {
+  float: left;
+}
+img.icon {
+  float: left;
+}
+span.tweetdate {
+  float: right;
+}
+span.buttons {
+  float: right;
+}

@@ -1,0 +1,76 @@
+<html>
+  <head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <script src="oauth.js" type="text/javascript"></script>
+    <script src="sha1.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      var consumerkey = "PuunbcdiW25qpTGk3evLtg";
+      var consumersecret = "CCDH8fEKTFuXTQY5oWj265tCnhcRW1kJEC1cuR8xIlU";
+      function getRequestToken() {
+        var secret = {
+          consumerSecret: consumersecret,
+          tokenSecret: ""
+        };
+        var message = {
+          method: "GET",
+          action: "http://api.twitter.com/oauth/request_token",
+          parameters: {
+            oauth_signature_method: "HMAC-SHA1",
+            oauth_consumer_key: consumerkey
+          }
+        };
+        OAuth.setTimestampAndNonce(message);
+        OAuth.SignatureMethod.sign(message, secret);
+        var url = OAuth.addToURL(message.action, message.parameters);
+        var frame = document.getElementById("requesttokenframe");
+        frame.contentWindow.location.href= url;
+      }
+      var requesttoken = null;
+      var requesttokensecret = null;
+      function parse_reqtoken(str) {
+        requesttoken = str.match(/oauth_token=[a-zA-Z0-9]+/)[0].split("=")[1];
+        requesttokensecret = str.match(/oauth_token_secret=[a-zA-Z0-9]+/)[0].split("=")[1];
+      }
+      function showAuthURL() {
+        parse_reqtoken(document.getElementById("requesttoken").value);
+        window.open("http://api.twitter.com/oauth/authorize?oauth_token=" + requesttoken);
+      }
+      function showAccessToken() {
+        var secret = {
+          consumerSecret: consumersecret,
+          tokenSecret: requesttokensecret
+        };
+        var message = {
+          method: "GET",
+          action: "http://api.twitter.com/oauth/access_token",
+          parameters: {
+            oauth_signature_method: "HMAC-SHA1",
+            oauth_consumer_key: consumerkey,
+            oauth_token: requesttoken,
+            oauth_verifier: document.getElementById("pin").value
+          }
+        };
+        OAuth.setTimestampAndNonce(message);
+        OAuth.SignatureMethod.sign(message, secret);
+        var url = OAuth.addToURL(message.action, message.parameters);
+        var frame = document.getElementById("accesstokenframe");
+        frame.contentWindow.location.href = url;
+      }
+    </script>
+  </head>
+  <body>
+    <iframe id="requesttokenframe" src="about:blank"></iframe>
+    <br />
+    <button onclick="getRequestToken();">Request token表示</button>
+    ここに表示された文字列を入力してください
+    <input type="text" id="requesttoken"></input>
+    <button onclick="showAuthURL();">認証ページ表示</button>
+    <br />
+    ここにPINを入力してください
+    <input type="text" id="pin"></input>
+    <button onclick="showAccessToken();">認証用文字列を表示</button>
+    <br />
+    <iframe id="accesstokenframe" src="about:blank"></iframe>
+    この文字列をtwitter clientに入力してください
+  </body>
+</html>
