@@ -33,6 +33,10 @@ div.tweet {
   min-height: 48px;
   word-wrap: break-word;
 }
+div.mention {
+  background-color: pink;
+}
+
 textarea#posttext {
   float: left;
 }
@@ -44,7 +48,15 @@ img.icon {
 }
 span.tweetdate {
   float: right;
+  font-size: 90%;
 }
 span.buttons {
   float: right;
+  font-size: 90%;
+}
+span.tweettext {
+  font-size: 90%;
+}
+span.tweetuser {
+  font-size: 90%;
 }

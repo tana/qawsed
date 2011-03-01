@@ -3,11 +3,15 @@ var consumerssecret = "CCDH8fEKTFuXTQY5oWj265tCnhcRW1kJEC1cuR8xIlU";
 var accesstoken;
 var accesstokensecret;
 
+var myID = null;
+
 var lastSinceId = null; // 最後に追加したツイートのID
 var mentionSinceId = null;  // 最後に追加したメンションのID
 
 var inreplyto_id = null; // リプライ先
 var inreplyto_name = null; // リプライ先のユーザー名
+
+var maxtweets = 20; // 表示するつぶやきの数
 
 // 数字が二桁に満たない場合は最初にゼロを付ける
 function addZero(num) {
@@ -22,7 +26,7 @@ function addZero(num) {
 var urlRegex = /(http|https):\/\/[^\s]+/g;
 var userRegex = /@(\w+)/g;
 function autoLink(str) {
-  var text1 = str.replace(urlRegex, "<a href=\"$&\">$&</a>");
+  var text1 = str.replace(urlRegex, "<a href=\"$&\" target=\"_blank\">$&</a>");
   return text1.replace(userRegex, "<a href=\"http://twitter.com/$1\">$&</a>");
 }
 
@@ -89,7 +93,11 @@ function addTweet(twdata, div) {
   }
   // 要素を組み立てる
   var tweet = document.createElement("div");
-  tweet.className = "tweet";
+  if (tweetdata["text"].match("@" + myID)) {
+    tweet.className = "tweet mention";
+  } else {
+    tweet.className = "tweet";
+  }
   // ユーザーアイコン
   var icon = document.createElement("img");
   icon.className = "icon";
@@ -131,12 +139,16 @@ function addTweet(twdata, div) {
 
   tweet.appendChild(document.createElement("br"));
   text = autoLink(tweetdata["text"]);
-  tweet.innerHTML += text;
+  tweettext = document.createElement("span");
+  tweettext.className = "tweettext";
+  tweettext.innerHTML = text;
+  tweet.appendChild(tweettext);
+//  tweet.innerHTML += text;
   tweet.appendChild(document.createElement("br"));
   var tweets = document.getElementById(div_id);
   tweets.insertBefore(tweet, tweets.firstChild);
 
-  if (tweets.childNodes.length > 20) {
+  if (tweets.childNodes.length > maxtweets) {
     tweets.removeChild(tweets.lastChild);
   }
 }
@@ -258,6 +270,7 @@ function parse_accesstoken(s) {
   var str = s.replace(/ /, "");
   arr[0] = str.match(/oauth_token=[a-zA-Z0-9\-]+/)[0].split("=")[1];
   arr[1] = str.match(/oauth_token_secret=[a-zA-Z0-9]+/)[0].split("=")[1];
+  arr[2] = str.match(/screen_name=[a-zA-Z0-9]+/)[0].split("=")[1];
   return arr;
 }
 window.onload = function() {
@@ -283,6 +296,7 @@ window.onload = function() {
     var arr = parse_accesstoken(document.authform.authtext.value);
     accesstoken = arr[0];
     accesstokensecret = arr[1];
+    myID = arr[2];
     document.body.removeChild(document.getElementById("authform"));
     start();
   }
@@ -353,5 +367,13 @@ function start() {
   document.getElementById("posttext").addEventListener("keyup", function(e) {
     // 入力欄に入力された時
     posttext_changed(e.target);
+  }, false);
+  document.settingform.ok.addEventListener("click", function(e) {
+    var num = parseInt(document.settingform.maxtweets.value);
+    if (isNaN(num)) {
+      alert("数字を入力してください");
+      return;
+    }
+    maxtweets = num;
   }, false);
 }

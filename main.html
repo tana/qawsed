@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>Twitter client</title>
+    <title>Qawsed</title>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8">
     <link rel="stylesheet" href="main.css" type="text/css" />
     <script src="crossdomain.js" type="text/javascript"></script>
@@ -23,6 +23,7 @@
         <!-- タブ -->
         <div id="tab_home" class="active_tab">Home</div>
         <div id="tab_mentions" class="tab">Mentions</div>
+        <div id="tab_setting" class="tab">Setting</div>
       </div>
       <!-- 情報表示 -->
       <span id="status"></span>
@@ -31,6 +32,13 @@
         <!-- つぶやきを表示するところ -->
       </div>
       <div id="mentions" style="display: none">
+      </div>
+      <div id="setting" style="display: none">
+        <form name="settingform">
+          表示するつぶやきの数: <input type="text" name="maxtweets" value="20"/>
+          <br />
+          <input type="button" name="ok" value="決定" />
+        </form>
       </div>
     </div>
   </body>

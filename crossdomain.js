@@ -30,9 +30,10 @@ function removeScriptElem(numb) {
 
 // クロスドメインでPOST 結果の取得はできない document.onloadより後に呼ぶ
 function post(url, params) {
-  var form = "<form method=\"POST\" action=\"" + url + "\">";
+  // accept-charsetが無いとOperaでエラーになる
+  var form = "<form method=\"POST\" action=\"" + url + "\" accept-charset=\"utf-8\">";
   for (var i in params) {
-    form = form + "<input type=\"input\" name=\"" + i + "\" value=\"" + params[i] + "\" />";
+    form = form + "<input type=\"hidden\" name=\"" + i + "\" value=\"" + params[i] + "\" />";
   }
   form = form + "</form>";
   form = form + "<script>window.onload = function() {document.forms[0].submit();}</script>";

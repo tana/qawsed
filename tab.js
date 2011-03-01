@@ -7,10 +7,17 @@ function tabClicked(e) {
   if (elem.id == "tab_home") {
     document.getElementById("tweets").style.display = "block";
     document.getElementById("mentions").style.display = "none";
+    document.getElementById("setting").style.display = "none";
     setHeight();
   } else if (elem.id == "tab_mentions") {
     document.getElementById("mentions").style.display = "block";
     document.getElementById("tweets").style.display = "none";
+    document.getElementById("setting").style.display = "none";
+    setHeight();
+  } else if (elem.id == "tab_setting") {
+    document.getElementById("mentions").style.display = "none";
+    document.getElementById("tweets").style.display = "none";
+    document.getElementById("setting").style.display = "block"
     setHeight();
   }
   activetab.className = "tab";
