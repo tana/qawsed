@@ -1,6 +1,12 @@
 div#tweets div#mentions {
   clear: both;
 }
+#posttext {
+  width: 95%;
+}
+#post {
+  width: 5%;
+}
 #tweets {
   overflow: auto;
   position: absolute;

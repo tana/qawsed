@@ -25,9 +25,15 @@ function addZero(num) {
 // Twitterのユーザー名やURLをリンクにする
 var urlRegex = /(http|https):\/\/[^\s]+/g;
 var userRegex = /@(\w+)/g;
+var hashRegex = /#(\w+)/g;
 function autoLink(str) {
   var text1 = str.replace(urlRegex, "<a href=\"$&\" target=\"_blank\">$&</a>");
-  return text1.replace(userRegex, "<a href=\"http://twitter.com/$1\">$&</a>");
+  var arr = text1.match(hashRegex);
+  var text2 = text1;
+  for (var i in arr) {
+    text2 = text2.replace(arr[i], "<a href=\"http://twitter.com/#!/search?q=" + encodeURIComponent(arr[i]) + "\" target=\"_blank\">" + arr[i] + "</a>");
+  }
+  return text2.replace(userRegex, "<a target=\"_blank\" href=\"http://twitter.com/$1\">$&</a>");
 }
 
 // created_atの時間をJSのDateに変換
@@ -51,6 +57,25 @@ function setReply(name, id) {
   document.getElementById("posttext").value = "@" + name;
   posttext_changed(document.getElementById("posttext"));
 }
+// OAuthの値を追加
+function addOAuthParams(method, url, params) {
+  var message = {
+    method: method,
+    action: url,
+    parameters: params
+  };
+  message.parameters.oauth_signature_method = "HMAC-SHA1";
+  message.parameters.oauth_consumer_key = consumerkey;
+  message.parameters.oauth_token = accesstoken;
+  OAuth.setTimestampAndNonce(message);
+  var secret = {
+    consumerSecret: consumerssecret,
+    tokenSecret: accesstokensecret 
+  };
+  OAuth.SignatureMethod.sign(message, secret);
+  return OAuth.getParameterMap(message.parameters);
+}
+
 // 公式RT
 function retweet(id) {
   var message = {
@@ -76,6 +101,36 @@ function retweet(id) {
       document.getElementById("status").innerHTML = "";
     }
   }, 1000);
+}
+
+// Fav追加
+function fav(id) {
+  var message = {
+    method: "POST",
+    action: "http://api.twitter.com/1/favorites/create/" + id + ".json",
+    parameters: {
+      oauth_signature_method: "HMAC-SHA1",
+      oauth_consumer_key: consumerkey,
+      oauth_token: accesstoken,
+    }
+  };
+  OAuth.setTimestampAndNonce(message);
+  var secret = {
+    consumerSecret: consumerssecret,
+    tokenSecret: accesstokensecret 
+  };
+  OAuth.SignatureMethod.sign(message, secret);
+  hash = OAuth.getParameterMap(message.parameters);
+  post(message.action, hash);
+  document.getElementById("status").innerHTML = "Favorited";
+  window.setTimeout(function() {
+    if (document.getElementById("status").innerHTML == "Favorited") {
+      document.getElementById("status").innerHTML = "";
+    }
+  }, 1000);
+  var buttons = document.getElementById(id).getElementsByClassName("buttons")[0];
+  buttons.removeChild(buttons.getElementsByClassName("fav_link")[0]);
+  buttons.innerHTML += "[Favorited]";
 }
 
 // つぶやきを追加する。divは追加先divタグのid
@@ -110,12 +165,14 @@ function addTweet(twdata, div) {
   username.className = "tweetuser";
   var userlink = document.createElement("a");
   userlink.href = "http://twitter.com/" + tweetdata["user"]["screen_name"];
+  userlink.target = "_blank";
   userlink.innerHTML = tweetdata["user"]["screen_name"];
   username.appendChild(userlink);
   if (isRetweet) {
     username.innerHTML += " by ";
     var link = document.createElement("a");
     link.href = "http://twitter.com/" + retweet_user["screen_name"];
+    link.target = "_blank";
     link.innerHTML = retweet_user["screen_name"];
     username.appendChild(link);
   }
@@ -132,9 +189,15 @@ function addTweet(twdata, div) {
   var screenname = tweetdata["user"]["screen_name"];
   var text = tweetdata["text"];
   var tweet_id = tweetdata["id_str"]; // id_strがidだと失敗する?
+  tweet.id = tweet_id;
   buttons.innerHTML += "<a href=\"javascript:setReply('" + screenname + "', '" + tweet_id + "');\">[Re]</a>&nbsp;";
   buttons.innerHTML += "<a href=\"javascript:retweet('" + tweet_id + "');\">[公式RT]</a>&nbsp;";
-  buttons.innerHTML += "<a href=\"javascript:unofficcial_rt('" + screenname + "', '" + text + "');\">[非公式RT]</a>";
+  buttons.innerHTML += "<a href=\"javascript:unofficcial_rt('" + screenname + "', '" + text + "');\">[非公式RT]</a>&nbsp;";
+  if (tweetdata["favorited"]) {
+    buttons.innerHTML += "[Favorited]";
+  } else {
+    buttons.innerHTML += "<a class=\"fav_link\" href=\"javascript:fav('" + tweet_id + "');\">[Fav]</a>";
+  }
   tweet.appendChild(buttons);
 
   tweet.appendChild(document.createElement("br"));
@@ -175,7 +238,8 @@ function mentioncallback(data) {
     tweetdata = data[i]
 
     sinceid = tweetdata["id"];
-    if (i == data.length - 1 && sinceid == lastSinceId) {
+    //if (i == data.length - 1 && sinceid == lastSinceId) {
+    if (i == data.length - 1 && sinceid == mentionSinceId) {
       continue;
     }
     addTweet(tweetdata, "mentions");
@@ -186,51 +250,24 @@ function mentioncallback(data) {
 
 // TLを取得
 function getTL(since_id) {
-  var message = {
-    method: "GET",
-    action: "http://api.twitter.com/1/statuses/home_timeline.json",
-    parameters: {
-      callback: "callback",
-      oauth_signature_method: "HMAC-SHA1",
-      oauth_consumer_key: consumerkey,
-      oauth_token: accesstoken,
-    }
-  }
+  var params = {callback: "callback"};
   if (arguments.length != 0) {
-    message.parameters.since_id = since_id;
+    params.since_id = since_id;
   }
-  OAuth.setTimestampAndNonce(message);
-  var secret = {
-    consumerSecret: consumerssecret,
-    tokenSecret: accesstokensecret 
-  }
-  OAuth.SignatureMethod.sign(message, secret);
-  url = OAuth.addToURL(message.action, message.parameters);
+  params = addOAuthParams("GET", "http://api.twitter.com/1/statuses/home_timeline.json", params);
+  var url = OAuth.addToURL("http://api.twitter.com/1/statuses/home_timeline.json", params);
   jsonp(url);
 }
 // メンション取得
 function getMentions(since_id) {
-  var message = {
-    method: "GET",
-    action: "http://api.twitter.com/1/statuses/mentions.json",
-    parameters: {
-      callback: "mentioncallback",
-      oauth_signature_method: "HMAC-SHA1",
-      oauth_consumer_key: consumerkey,
-      oauth_token: accesstoken,
-    }
-  }
+  var params = {callback: "mentioncallback"};
   if (arguments.length != 0) {
     // mentionの表示が重複する 直す
-    message.parameters.since_id = since_id;
+    params.since_id = since_id;
   }
-  OAuth.setTimestampAndNonce(message);
-  var secret = {
-    consumerSecret: consumerssecret,
-    tokenSecret: accesstokensecret 
-  }
-  OAuth.SignatureMethod.sign(message, secret);
-  url = OAuth.addToURL(message.action, message.parameters);
+  params = addOAuthParams("GET", "http://api.twitter.com/1/statuses/mentions.json", params);
+  var url = OAuth.addToURL("http://api.twitter.com/1/statuses/mentions.json", params);
+  mention_load_count++;
   jsonp(url, 1);
 }
 
@@ -241,27 +278,12 @@ function update(str, inreplyto) {
   if (arguments.length == 2) {
     replyto = inreplyto;
   }
-  var message = {
-    method: "POST",
-    action: "http://api.twitter.com/1/statuses/update.xml",
-    parameters: {
-      oauth_signature_method: "HMAC-SHA1",
-      oauth_consumer_key: consumerkey,
-      oauth_token: accesstoken,
-      status: str
-    }
-  };
+  var params = {status: str};
   if (replyto != null) {
-    message.parameters["in_reply_to_status_id"] = replyto;
+    params["in_reply_to_status_id"] = replyto;
   }
-  OAuth.setTimestampAndNonce(message);
-  var secret = {
-    consumerSecret: consumerssecret,
-    tokenSecret: accesstokensecret 
-  };
-  OAuth.SignatureMethod.sign(message, secret);
-  hash = OAuth.getParameterMap(message.parameters);
-  post(message.action, hash);
+  var hash = addOAuthParams("POST", "http://api.twitter.com/1/statuses/update.xml", params);
+  post("http://api.twitter.com/1/statuses/update.xml", hash);
 }
 
 // ユーザーが入力した認証用文字列からaccess tokenとsecretを取り出す
@@ -270,7 +292,7 @@ function parse_accesstoken(s) {
   var str = s.replace(/ /, "");
   arr[0] = str.match(/oauth_token=[a-zA-Z0-9\-]+/)[0].split("=")[1];
   arr[1] = str.match(/oauth_token_secret=[a-zA-Z0-9]+/)[0].split("=")[1];
-  arr[2] = str.match(/screen_name=[a-zA-Z0-9]+/)[0].split("=")[1];
+  arr[2] = str.match(/screen_name=[a-zA-Z0-9_]+/)[0].split("=")[1];
   return arr;
 }
 window.onload = function() {
@@ -375,5 +397,19 @@ function start() {
       return;
     }
     maxtweets = num;
+    var coolcssEnable = document.settingform.coolcss.checked;
+    if (coolcssEnable) {
+      var link = document.createElement("link");
+      link.href = "cool.css";
+      link.type = "text/css";
+      link.rel = "stylesheet";
+      link.id = "cool"
+      document.getElementsByTagName("head")[0].appendChild(link);
+    } else {
+      var coolcss = document.getElementById("cool");
+      if (coolcss) {
+        document.getElementsByTagName("head")[0].removeChild(coolcss);
+      }
+    }
   }, false);
 }
