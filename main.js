@@ -267,7 +267,6 @@ function getMentions(since_id) {
   }
   params = addOAuthParams("GET", "http://api.twitter.com/1/statuses/mentions.json", params);
   var url = OAuth.addToURL("http://api.twitter.com/1/statuses/mentions.json", params);
-  mention_load_count++;
   jsonp(url, 1);
 }
 
