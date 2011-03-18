@@ -137,8 +137,10 @@ function fav(id) {
 function addTweet(twdata, div) {
   var tweetdata = twdata;
   var div_id = "tweets";
+  var id_prefix = ""; // idの前に付ける文字列
   if (arguments.length == 2) {
     div_id = div;
+    id_prefix = div + "_";
   }
   // リツイートか判定、ユーザー情報を保存、ツイート情報を置き換える
   var isRetweet = (tweetdata["retweeted_status"] != undefined);
@@ -189,7 +191,7 @@ function addTweet(twdata, div) {
   var screenname = tweetdata["user"]["screen_name"];
   var text = tweetdata["text"];
   var tweet_id = tweetdata["id_str"]; // id_strがidだと失敗する?
-  tweet.id = tweet_id;
+  tweet.id = id_prefix + tweet_id;
   buttons.innerHTML += "<a href=\"javascript:setReply('" + screenname + "', '" + tweet_id + "');\">[Re]</a>&nbsp;";
   buttons.innerHTML += "<a href=\"javascript:retweet('" + tweet_id + "');\">[公式RT]</a>&nbsp;";
   buttons.innerHTML += "<a href=\"javascript:unofficcial_rt('" + screenname + "', '" + text + "');\">[非公式RT]</a>&nbsp;";
@@ -226,6 +228,7 @@ function callback(data) {
       continue;
     }
     addTweet(tweetdata);
+    Plugins.tweet(tweetdata);
   }
   lastSinceId = sinceid;
   removeScriptElem();
@@ -243,8 +246,13 @@ function mentioncallback(data) {
       continue;
     }
     addTweet(tweetdata, "mentions");
+    Plugins.mention(tweetdata);
   }
-  mentionSinceId = sinceid;
+  //console.log("len");
+  //console.log(data.length);
+  if (sinceid != null) {
+    mentionSinceId = sinceid;
+  }
   removeScriptElem(1);
 }
 
@@ -264,6 +272,8 @@ function getMentions(since_id) {
   if (arguments.length != 0) {
     // mentionの表示が重複する 直す
     params.since_id = since_id;
+    //console.log("since");
+    //console.log(since_id);
   }
   params = addOAuthParams("GET", "http://api.twitter.com/1/statuses/mentions.json", params);
   var url = OAuth.addToURL("http://api.twitter.com/1/statuses/mentions.json", params);
@@ -380,8 +390,10 @@ function start() {
   }, 1000 * 60);
   window.setInterval(function() {
     if (mentionSinceId == null) {
+      //console.log("null");
       getMentions();
     } else {
+      //console.log("notnull");
       getMentions(mentionSinceId);
     }
   }, 1000 * 60);
