@@ -161,6 +161,9 @@ function NotifyPlugin() {
 function Thumbnail() {
   this.name = "画像投稿サービスの画像のサムネイルを表示";
   function addthumbnail(data, prefix) {
+    if (data["retweeted_status"] != undefined) {
+      data = data["retweeted_status"];
+    }
     var elem = document.getElementById(prefix + data["id_str"]);
     var textelem = elem.getElementsByClassName("tweettext")[0];
     var text = data["text"];
@@ -176,7 +179,7 @@ function Thumbnail() {
     for (i in instagramURLs) {
       var img = document.createElement("img");
       var str = instagramURLs[i];
-      img.src = str + "/media/?size=t";
+      img.src = str + "media/?size=t";
       textelem.appendChild(document.createElement("br"));
       textelem.appendChild(img);
     }
