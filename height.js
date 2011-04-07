@@ -1,5 +1,4 @@
 // tweets、mentionsの高さを変更する
-// mentionsには効かないっぽいので修正する
 function setHeight() {
   var tweets_top = document.getElementById("tweets").offsetTop;
   var tweets_height = document.body.clientHeight - tweets_top - 4;

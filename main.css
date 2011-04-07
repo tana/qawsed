@@ -37,6 +37,7 @@ div.tweet {
   background-color: lavender;
   padding: 2px 2px 2px 2px;
   min-height: 48px;
+  max-width: 100%;
   word-wrap: break-word;
 }
 div.mention {

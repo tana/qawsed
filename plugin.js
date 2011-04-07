@@ -51,6 +51,13 @@ Plugins = {
         this.plugins[i].mention(data);
       }
     }
+  },
+  tab: function(id) {
+    for (i in this.plugins) {
+      if (this.plugins[i]["tab"] != undefined && this.enabled[i]) {
+        this.plugins[i].tab(id);
+      }
+    }
   }
 }
 
@@ -151,7 +158,52 @@ function NotifyPlugin() {
     }
   }
 }
+function Thumbnail() {
+  this.name = "画像投稿サービスの画像のサムネイルを表示";
+  function addthumbnail(data, prefix) {
+    var elem = document.getElementById(prefix + data["id_str"]);
+    var textelem = elem.getElementsByClassName("tweettext")[0];
+    var text = data["text"];
+    var twitpicURLs = text.match(/http:\/\/twitpic\.com\/\w+/g);
+    for (i in twitpicURLs) {
+      var img = document.createElement("img");
+      var str = twitpicURLs[i];
+      img.src = "http://twitpic.com/show/thumb/" + str.slice(str.lastIndexOf("/") + 1, str.length);
+      textelem.appendChild(document.createElement("br"));
+      textelem.appendChild(img);
+    }
+    var instagramURLs = text.match(/http:\/\/instagr\.am\/p\/[\w\-]+\//g);
+    for (i in instagramURLs) {
+      var img = document.createElement("img");
+      var str = instagramURLs[i];
+      img.src = str + "/media/?size=t";
+      textelem.appendChild(document.createElement("br"));
+      textelem.appendChild(img);
+    }
+  }
+  this.mention = function(data) { addthumbnail(data, "mentions_"); };
+  this.tweet = function(data) { addthumbnail(data, ""); };
+}
+function TitleNotify() {
+  this.name = "リプライが来た時にタイトルを変更";
+  this.count = 0;
+  this.enable = function() {
+    this.count = 0;
+  }
+  this.mention = function(data) {
+    this.count++;
+    document.title = "(" + this.count.toString() + ")Qawsed";
+  };
+  this.tab = function(id) {
+    if (id == "tab_mentions") {
+      this.count = 0;
+      document.title = "Qawsed";
+    }
+  };
+}
 window.addEventListener("load", function() {
   Plugins.add(new NotifyPlugin());
   Plugins.add(new ShowReply());
+  Plugins.add(new Thumbnail());
+  Plugins.add(new TitleNotify());
 }, false);

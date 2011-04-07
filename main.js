@@ -78,23 +78,9 @@ function addOAuthParams(method, url, params) {
 
 // 公式RT
 function retweet(id) {
-  var message = {
-    method: "POST",
-    action: "http://api.twitter.com/1/statuses/retweet/" + id + ".json",
-    parameters: {
-      oauth_signature_method: "HMAC-SHA1",
-      oauth_consumer_key: consumerkey,
-      oauth_token: accesstoken,
-    }
-  };
-  OAuth.setTimestampAndNonce(message);
-  var secret = {
-    consumerSecret: consumerssecret,
-    tokenSecret: accesstokensecret 
-  };
-  OAuth.SignatureMethod.sign(message, secret);
-  hash = OAuth.getParameterMap(message.parameters);
-  post(message.action, hash);
+  var url = "http://api.twitter.com/1/statuses/retweet/" + id + ".xml";
+  var hash = addOAuthParams("POST", url, {});
+  post(url, hash);
   document.getElementById("status").innerHTML = "Retweeted";
   window.setTimeout(function() {
     if (document.getElementById("status").innerHTML == "Retweeted") {
@@ -105,23 +91,9 @@ function retweet(id) {
 
 // Fav追加
 function fav(id) {
-  var message = {
-    method: "POST",
-    action: "http://api.twitter.com/1/favorites/create/" + id + ".json",
-    parameters: {
-      oauth_signature_method: "HMAC-SHA1",
-      oauth_consumer_key: consumerkey,
-      oauth_token: accesstoken,
-    }
-  };
-  OAuth.setTimestampAndNonce(message);
-  var secret = {
-    consumerSecret: consumerssecret,
-    tokenSecret: accesstokensecret 
-  };
-  OAuth.SignatureMethod.sign(message, secret);
-  hash = OAuth.getParameterMap(message.parameters);
-  post(message.action, hash);
+  var url = "http://api.twitter.com/1/favorites/create/" + id + ".xml";
+  var hash = addOAuthParams("POST", url, {});
+  post(url, hash);
   document.getElementById("status").innerHTML = "Favorited";
   window.setTimeout(function() {
     if (document.getElementById("status").innerHTML == "Favorited") {

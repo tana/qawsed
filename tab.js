@@ -9,16 +9,19 @@ function tabClicked(e) {
     document.getElementById("mentions").style.display = "none";
     document.getElementById("setting").style.display = "none";
     setHeight();
+    Plugins.tab("tab_home");
   } else if (elem.id == "tab_mentions") {
     document.getElementById("mentions").style.display = "block";
     document.getElementById("tweets").style.display = "none";
     document.getElementById("setting").style.display = "none";
     setHeight();
+    Plugins.tab("tab_mentions");
   } else if (elem.id == "tab_setting") {
     document.getElementById("mentions").style.display = "none";
     document.getElementById("tweets").style.display = "none";
     document.getElementById("setting").style.display = "block"
     setHeight();
+    Plugins.tab("tab_setting");
   }
   activetab.className = "tab";
   elem.className = "active_tab";
